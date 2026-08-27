@@ -3,302 +3,82 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#111923">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#14202b">
 <title>Crossy Pets 3D</title>
 <style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111923}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;touch-action:none;user-select:none}
-  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;background:#9ed7ff}
-  .hud{position:fixed;z-index:5;top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));display:flex;justify-content:space-between;pointer-events:none}
-  .panel,.btn{background:rgba(10,15,22,.78);color:#fff;border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,.22);backdrop-filter:blur(8px)}
-  .panel{padding:9px 13px;min-width:105px}
-  .score{font-size:clamp(20px,5vw,30px);font-weight:900;line-height:1}
-  .best{font-size:12px;opacity:.75;margin-top:5px}
-  .top{display:flex;gap:8px;pointer-events:auto}
-  .btn{border:0;width:48px;height:48px;font-size:22px;cursor:pointer}
-  .chars{position:fixed;z-index:6;right:max(10px,env(safe-area-inset-right));top:max(70px,calc(env(safe-area-inset-top) + 70px));display:flex;gap:8px}
-  .char{border:0;border-radius:14px;background:rgba(10,15,22,.78);font-size:25px;padding:8px 11px;cursor:pointer}
-  .char.active{outline:3px solid #ffd84d}
-  .controls{position:fixed;z-index:6;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:none;grid-template-columns:62px 62px 62px;grid-template-rows:54px 54px;gap:7px}
-  .move{border:0;border-radius:14px;background:rgba(10,15,22,.8);color:#fff;font-size:26px;font-weight:900}
-  .up{grid-column:2}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}
-  .overlay{position:fixed;z-index:20;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,8,12,.58);padding:20px}
-  .card{width:min(92vw,360px);background:#fff;border-radius:20px;text-align:center;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-  .card h1{margin:0 0 8px}.card p{margin:0 0 18px;color:#555}
-  .primary{border:0;border-radius:14px;background:#52bf45;color:#fff;font-size:18px;font-weight:800;padding:13px 22px}
-  .hint{position:fixed;z-index:4;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(10,15,22,.6);color:#fff;border-radius:12px;padding:7px 11px;font-size:12px;white-space:nowrap;pointer-events:none}
-  @media (pointer:coarse),(max-width:820px){.controls{display:grid}.hint{display:none}}
-  @media (max-height:560px) and (orientation:landscape){.controls{left:auto;right:max(12px,env(safe-area-inset-right));transform:none}.chars{top:max(10px,env(safe-area-inset-top));right:175px}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#14202b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;touch-action:none;user-select:none}canvas{position:fixed;inset:0;width:100%;height:100%;display:block}.hud{position:fixed;z-index:5;top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));display:flex;justify-content:space-between;pointer-events:none}.panel,.btn,.char,.move{background:rgba(10,15,22,.76);color:#fff;border:0;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);backdrop-filter:blur(8px)}.panel{padding:9px 13px;min-width:105px}.score{font-size:clamp(20px,5vw,30px);font-weight:900;line-height:1}.best{font-size:12px;opacity:.76;margin-top:5px}.top{display:flex;gap:8px;pointer-events:auto}.btn{width:48px;height:48px;font-size:22px}.chars{position:fixed;z-index:6;right:max(10px,env(safe-area-inset-right));top:max(70px,calc(env(safe-area-inset-top) + 70px));display:flex;gap:8px}.char{font-size:25px;padding:8px 11px}.char.active{outline:3px solid #ffd84d}.controls{position:fixed;z-index:6;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:none;grid-template-columns:62px 62px 62px;grid-template-rows:54px 54px;gap:7px}.move{font-size:26px;font-weight:900}.up{grid-column:2}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}.hint{position:fixed;z-index:4;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(10,15,22,.6);color:#fff;border-radius:12px;padding:7px 11px;font-size:12px;white-space:nowrap}.overlay{position:fixed;z-index:20;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,8,12,.58);padding:20px}.card{width:min(92vw,360px);background:#fff;border-radius:20px;text-align:center;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35)}.card h1{margin:0 0 8px}.card p{margin:0 0 18px;color:#555}.primary{border:0;border-radius:14px;background:#52bf45;color:#fff;font-size:18px;font-weight:800;padding:13px 22px}@media(pointer:coarse),(max-width:820px){.controls{display:grid}.hint{display:none}}@media(max-height:560px) and (orientation:landscape){.controls{left:auto;right:max(12px,env(safe-area-inset-right));transform:none}.chars{top:max(10px,env(safe-area-inset-top));right:175px}}
 </style>
 </head>
 <body>
-<canvas id="game"></canvas>
-<div class="hud">
-  <div class="panel"><div class="score" id="score">🏆 0</div><div class="best" id="best">Рекорд: 0</div></div>
-  <div class="top"><button class="btn" id="restart">↻</button></div>
-</div>
-<div class="chars">
-  <button class="char active" id="frog">🐸</button>
-  <button class="char" id="cat">🐱</button>
-</div>
-<div class="controls">
-  <button class="move up" data-m="up">↑</button>
-  <button class="move left" data-m="left">←</button>
-  <button class="move down" data-m="down">↓</button>
-  <button class="move right" data-m="right">→</button>
-</div>
+<canvas id="gl"></canvas>
+<div class="hud"><div class="panel"><div class="score" id="score">🏆 0</div><div class="best" id="best">Рекорд: 0</div></div><div class="top"><button class="btn" id="restart">↻</button></div></div>
+<div class="chars"><button class="char active" id="frog">🐸</button><button class="char" id="cat">🐱</button></div>
+<div class="controls"><button class="move up" data-m="up">↑</button><button class="move left" data-m="left">←</button><button class="move down" data-m="down">↓</button><button class="move right" data-m="right">→</button></div>
 <div class="hint">Клик / ↑ / Space — вперед · ← → — в стороны</div>
-<div class="overlay" id="over">
-  <div class="card">
-    <h1>Попался!</h1>
-    <p id="result">Счёт: 0</p>
-    <button class="primary" id="again">Играть ещё</button>
-  </div>
-</div>
-
+<div class="overlay" id="over"><div class="card"><h1>Попался!</h1><p id="result">Счёт: 0</p><button class="primary" id="again">Играть ещё</button></div></div>
 <script>
-(()=>{
-"use strict";
+(()=>{'use strict';
+const canvas=document.getElementById('gl');
+const gl=canvas.getContext('webgl',{antialias:true,alpha:false,powerPreference:'high-performance'})||canvas.getContext('experimental-webgl');
+if(!gl){document.body.innerHTML='<div style="color:white;padding:40px;font:20px Arial">WebGL не поддерживается этим браузером.</div>';return}
 
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d",{alpha:false});
-const scoreEl=document.getElementById("score");
-const bestEl=document.getElementById("best");
-const over=document.getElementById("over");
-const result=document.getElementById("result");
-const frogBtn=document.getElementById("frog");
-const catBtn=document.getElementById("cat");
+// ---------- math ----------
+const M={
+ identity:()=>new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]),
+ mul:(a,b)=>{const o=new Float32Array(16);for(let r=0;r<4;r++)for(let c=0;c<4;c++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o},
+ translate:(x,y,z)=>new Float32Array([1,0,0,0,0,1,0,0,0,1,0,x,y,z,1]),
+ scale:(x,y,z)=>new Float32Array([x,0,0,0,0,y,0,0,0,0,z,0,0,0,0,1]),
+ rotY:a=>{const c=Math.cos(a),s=Math.sin(a);return new Float32Array([c,0,-s,0,0,1,0,0,s,0,c,0,0,0,0,1])},
+ ortho:(l,r,b,t,n,f)=>new Float32Array([2/(r-l),0,0,0,0,2/(t-b),0,0,0,0,-2/(f-n),0,-(r+l)/(r-l),-(t+b)/(t-b),-(f+n)/(f-n),1]),
+ lookAt:(eye,target,up)=>{let zx=eye[0]-target[0],zy=eye[1]-target[1],zz=eye[2]-target[2];let zl=Math.hypot(zx,zy,zz);zx/=zl;zy/=zl;zz/=zl;let xx=up[1]*zz-up[2]*zy,xy=up[2]*zx-up[0]*zz,xz=up[0]*zy-up[1]*zx;let xl=Math.hypot(xx,xy,xz);xx/=xl;xy/=xl;xz/=xl;let yx=zy*xz-zz*xy,yy=zz*xx-zx*xz,yz=zx*xy-zy*xx;return new Float32Array([xx,yx,zx,0,xy,yy,zy,0,xz,yz,zz,0,-(xx*eye[0]+xy*eye[1]+xz*eye[2]),-(yx*eye[0]+yy*eye[1]+yz*eye[2]),-(zx*eye[0]+zy*eye[1]+zz*eye[2]),1])}
+};
+function norm3(x,y,z){const l=Math.hypot(x,y,z)||1;return[x/l,y/l,z/l]}
 
-let DPR=1,W=0,H=0;
-function resize(){
-  DPR=Math.min(window.devicePixelRatio||1,1.6);
-  W=innerWidth; H=innerHeight;
-  canvas.width=Math.round(W*DPR); canvas.height=Math.round(H*DPR);
-  ctx.setTransform(DPR,0,0,DPR,0,0);
-}
-addEventListener("resize",resize,{passive:true}); resize();
+// ---------- shaders ----------
+const vs=`attribute vec3 aPos;attribute vec3 aNormal;uniform mat4 uMVP;uniform mat4 uModel;varying vec3 vN;varying vec3 vW;void main(){vec4 w=uModel*vec4(aPos,1.0);vW=w.xyz;vN=mat3(uModel)*aNormal;gl_Position=uMVP*vec4(aPos,1.0);}`;
+const fs=`precision mediump float;uniform vec3 uColor;uniform vec3 uLightDir;uniform vec3 uFogColor;uniform float uFogNear;uniform float uFogFar;varying vec3 vN;varying vec3 vW;void main(){vec3 n=normalize(vN);float d=max(dot(n,normalize(-uLightDir)),0.0);float lit=.48+.52*d;float fog=clamp((length(vW.xz)-uFogNear)/(uFogFar-uFogNear),0.0,1.0);vec3 c=uColor*lit;c=mix(c,uFogColor,fog*.55);gl_FragColor=vec4(c,1.0);}`;
+function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(s);return s}
+const prog=gl.createProgram();gl.attachShader(prog,shader(gl.VERTEX_SHADER,vs));gl.attachShader(prog,shader(gl.FRAGMENT_SHADER,fs));gl.linkProgram(prog);gl.useProgram(prog);
+const loc={pos:gl.getAttribLocation(prog,'aPos'),normal:gl.getAttribLocation(prog,'aNormal'),mvp:gl.getUniformLocation(prog,'uMVP'),model:gl.getUniformLocation(prog,'uModel'),color:gl.getUniformLocation(prog,'uColor'),light:gl.getUniformLocation(prog,'uLightDir'),fog:gl.getUniformLocation(prog,'uFogColor'),fn:gl.getUniformLocation(prog,'uFogNear'),ff:gl.getUniformLocation(prog,'uFogFar')};
 
-const COLS=7;
-const LANE=1;
-const VIEW_LANES=13;
-let char=localStorage.getItem("crossy3dChar")||"frog";
-let best=Number(localStorage.getItem("crossy3dBest")||0);
-let player,highest,dead,startTime,lastTime,riding=null;
+function mesh(verts,normals,indices){const m={count:indices.length};m.v=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,m.v);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(verts),gl.STATIC_DRAW);m.n=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,m.n);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(normals),gl.STATIC_DRAW);m.i=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.i);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(indices),gl.STATIC_DRAW);return m}
+function cubeMesh(){const p=[],n=[],idx=[];const faces=[[[1,0,0],[1,-1,-1],[1,1,-1],[1,1,1],[1,-1,1]],[[-1,0,0],[-1,-1,1],[-1,1,1],[-1,1,-1],[-1,-1,-1]],[[0,1,0],[-1,1,-1],[-1,1,1],[1,1,1],[1,1,-1]],[[0,-1,0],[-1,-1,1],[-1,-1,-1],[1,-1,-1],[1,-1,1]],[[0,0,1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]],[[0,0,-1],[1,-1,-1],[-1,-1,-1],[-1,1,-1],[1,1,-1]]];let b=0;for(const f of faces){for(let k=1;k<5;k++){p.push(...f[k]);n.push(...f[0])}idx.push(b,b+1,b+2,b,b+2,b+3);b+=4}return mesh(p,n,idx)}
+function sphereMesh(seg=10,rings=7){const p=[],n=[],idx=[];for(let y=0;y<=rings;y++){const v=y/rings,ph=v*Math.PI;for(let x=0;x<=seg;x++){const u=x/seg,th=u*Math.PI*2;const sx=Math.sin(ph)*Math.cos(th),sy=Math.cos(ph),sz=Math.sin(ph)*Math.sin(th);p.push(sx,sy,sz);n.push(sx,sy,sz)}}for(let y=0;y<rings;y++)for(let x=0;x<seg;x++){const a=y*(seg+1)+x,b=a+seg+1;idx.push(a,b,a+1,b,b+1,a+1)}return mesh(p,n,idx)}
+const CUBE=cubeMesh(),SPHERE=sphereMesh();
 
-function seeded(n){
-  const x=Math.sin(n*12.9898+78.233)*43758.5453;
-  return x-Math.floor(x);
-}
-function laneType(y){
-  if(y<=1)return "grass";
-  const r=seeded(y);
-  if(r<.48)return "road";
-  if(r<.71)return "water";
-  return "grass";
-}
-function dir(y){return y%2===0?1:-1}
-function speed(y){
-  const mobile=matchMedia("(pointer:coarse)").matches;
-  return (mobile?0.72:1)*(0.78+(y%5)*.085)*dir(y);
-}
+let view=M.identity(),proj=M.identity();
+function draw(mesh,obj){let model=M.mul(M.translate(obj.x||0,obj.y||0,obj.z||0),M.mul(M.rotY(obj.ry||0),M.scale((obj.sx||1)*.5,(obj.sy||1)*.5,(obj.sz||1)*.5)));let mvp=M.mul(proj,M.mul(view,model));gl.uniformMatrix4fv(loc.model,false,model);gl.uniformMatrix4fv(loc.mvp,false,mvp);gl.uniform3fv(loc.color,obj.color);gl.bindBuffer(gl.ARRAY_BUFFER,mesh.v);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,mesh.n);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.i);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_SHORT,0)}
+const col=s=>{const x=parseInt(s.slice(1),16);return[(x>>16&255)/255,(x>>8&255)/255,(x&255)/255]};
 
-function reset(){
-  player={x:0,y:0,jumpT:1,fromX:0,fromY:0,toX:0,toY:0};
-  highest=0; dead=false; riding=null; startTime=performance.now()/1000; lastTime=startTime;
-  over.style.display="none";
-}
-reset();
+// ---------- game ----------
+const laneW=8, laneDepth=1;let char=localStorage.getItem('crossyTrue3DChar')||'frog';let best=Number(localStorage.getItem('crossyTrue3DBest')||0);let player,highest,dead,riding=null,last=0;
+const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),over=document.getElementById('over'),result=document.getElementById('result');
+function seeded(n){const x=Math.sin(n*12.9898+78.233)*43758.5453;return x-Math.floor(x)}
+function laneType(y){if(y<=1)return'grass';const r=seeded(y);if(r<.43)return'road';if(r<.70)return'water';return'grass'}
+function direction(y){return y%2?1:-1}function spd(y){return (.72+(y%5)*.08)*direction(y)}
+function cars(y,t){const a=[],count=1+(y%2),gap=5.2;for(let i=0;i<count;i++){let x=((i*gap+t*spd(y)*1.4+y*.81+40)%10+10)%10-5;a.push({x,w:1.3})}return a}
+function logs(y,t){const a=[],count=2+(y%2),gap=4.2;for(let i=0;i<count;i++){let x=((i*gap+t*spd(y)*.62+y*.53+40)%11+11)%11-5.5;a.push({id:y+'-'+i,x,w:2.55})}return a}
+function reset(){player={x:0,y:0,fromX:0,fromY:0,toX:0,toY:0,jump:1};highest=0;dead=false;riding=null;over.style.display='none'}reset();
+function setChar(v){char=v;localStorage.setItem('crossyTrue3DChar',v);document.getElementById('frog').classList.toggle('active',v==='frog');document.getElementById('cat').classList.toggle('active',v==='cat')};document.getElementById('frog').onclick=()=>setChar('frog');document.getElementById('cat').onclick=()=>setChar('cat');setChar(char);document.getElementById('restart').onclick=reset;document.getElementById('again').onclick=reset;
+function lose(){if(dead)return;dead=true;riding=null;best=Math.max(best,highest);localStorage.setItem('crossyTrue3DBest',best);result.textContent='Счёт: '+highest;over.style.display='flex'}
+function move(dx,dy){if(dead||player.jump<1)return;player.fromX=player.x;player.fromY=player.y;player.toX=Math.max(-3,Math.min(3,player.x+dx));player.toY=Math.max(0,player.y+dy);player.jump=0;riding=null}
+function landing(t){const y=Math.round(player.y);if(laneType(y)==='water'){const hit=logs(y,t).find(l=>Math.abs(player.x-l.x)<l.w*.48);if(hit)riding={lane:y,id:hit.id};else lose()}}
+function update(dt,t){if(dead)return;if(player.jump<1){player.jump=Math.min(1,player.jump+dt*5.2);const q=1-Math.pow(1-player.jump,3);player.x=player.fromX+(player.toX-player.fromX)*q;player.y=player.fromY+(player.toY-player.fromY)*q;if(player.jump===1){player.x=player.toX;player.y=player.toY;highest=Math.max(highest,Math.round(player.y));landing(t)}}else if(riding){const l=logs(riding.lane,t).find(v=>v.id===riding.id);if(l){player.x=l.x;if(Math.abs(player.x)>3.7)lose()}else lose()}const y=Math.round(player.y);if(laneType(y)==='road'&&player.jump===1)for(const c of cars(y,t))if(Math.abs(player.x-c.x)<c.w*.52+.25)lose()}
 
-function setChar(v){
-  char=v; localStorage.setItem("crossy3dChar",v);
-  frogBtn.classList.toggle("active",v==="frog");
-  catBtn.classList.toggle("active",v==="cat");
-}
-frogBtn.onclick=()=>setChar("frog"); catBtn.onclick=()=>setChar("cat"); setChar(char);
-document.getElementById("restart").onclick=reset;
-document.getElementById("again").onclick=reset;
+function shadow(x,y,z,sx,sz){gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);draw(CUBE,{x,y:y+.015,z,sx,sy:.015,sz,color:[.13,.16,.18]});gl.disable(gl.BLEND)}
+function groundLane(y,type){const c=type==='grass'?col(y%2?'#79c957':'#86d665'):type==='road'?col('#454b51'):col('#35a8df');draw(CUBE,{x:0,y:0,z:y,sx:laneW,sy:.12,sz:.98,color:c});if(type==='road'){for(let x=-3.2;x<3.3;x+=1.2)draw(CUBE,{x,y:.07,z:y,sx:.55,sy:.02,sz:.04,color:col('#d9dde0')})}if(type==='water'){for(let x=-3.5;x<3.6;x+=.7)draw(CUBE,{x,y:.07,z:y+.18*Math.sin(x+y),sx:.38,sy:.015,sz:.025,color:col('#8bd8f2')})}}
+function tree(x,y){draw(CUBE,{x,y:.35,z:y,sx:.28,sy:.7,sz:.28,color:col('#805126')});draw(CUBE,{x,y:.92,z:y,sx:.82,sy:.72,sz:.82,color:col('#55a944')})}
+function drawCar(c,y){shadow(c.x,.14,y,1.25,.62);const red=(Math.round(y+c.x*3)&1)===0;const body=red?col('#f46f56'):col('#f2c94c');draw(CUBE,{x:c.x,y:.42,z:y,sx:1.25,sy:.48,sz:.58,color:body});draw(CUBE,{x:c.x-.14*direction(y),y:.74,z:y,sx:.55,sy:.34,sz:.48,color:col('#bde5f5')});for(const ox of [-.42,.42])for(const oz of [-.31,.31])draw(CUBE,{x:c.x+ox,y:.18,z:y+oz,sx:.18,sy:.22,sz:.12,color:col('#20262b')})}
+function drawLog(l,y){shadow(l.x,.11,y,l.w,.5);draw(CUBE,{x:l.x,y:.24,z:y,sx:l.w,sy:.34,sz:.48,color:col('#8b5428')});for(let x=l.x-l.w*.33;x<l.x+l.w*.4;x+=.65)draw(CUBE,{x,y:.42,z:y,sx:.06,sy:.02,sz:.5,color:col('#b87538')})}
+function limb(x,y,z,sx,sy,sz,c){draw(CUBE,{x,y,z,sx,sy,sz,color:c})}
+function drawCharacter(){const jump=player.jump<1?Math.sin(player.jump*Math.PI)*.36:0;const baseY=.34+jump,x=player.x,z=player.y;shadow(x,.13,z,.7,.55);if(char==='frog'){const green=col('#66b947'),light=col('#86d662');draw(SPHERE,{x,y:baseY+.44,z,sx:.55,sy:.7,sz:.5,color:green});draw(SPHERE,{x,y:baseY+.89,z,sx:.62,sy:.5,sz:.56,color:light});for(const ex of [-.19,.19]){draw(SPHERE,{x:x+ex,y:baseY+1.12,z:z-.05,sx:.2,sy:.2,sz:.2,color:col('#ffffff')});draw(SPHERE,{x:x+ex,y:baseY+1.15,z:z-.12,sx:.08,sy:.08,sz:.08,color:col('#202820')})}limb(x-.27,baseY+.24,z,.18,.48,.18,green);limb(x+.27,baseY+.24,z,.18,.48,.18,green)}else{const orange=col('#e9963f'),cream=col('#f7c67b');draw(SPHERE,{x,y:baseY+.45,z,sx:.54,sy:.72,sz:.48,color:orange});draw(SPHERE,{x,y:baseY+.9,z,sx:.6,sy:.52,sz:.54,color:orange});draw(CUBE,{x:x-.2,y:baseY+1.18,z,sx:.18,sy:.28,sz:.16,ry:.18,color:orange});draw(CUBE,{x:x+.2,y:baseY+1.18,z,sx:.18,sy:.28,sz:.16,ry:-.18,color:orange});draw(SPHERE,{x,y:baseY+.83,z:z-.23,sx:.28,sy:.2,sz:.15,color:cream});for(const ex of [-.14,.14])draw(SPHERE,{x:x+ex,y:baseY+.98,z:z-.28,sx:.065,sy:.065,sz:.065,color:col('#24221e')});limb(x-.25,baseY+.24,z,.16,.48,.16,orange);limb(x+.25,baseY+.24,z,.16,.48,.16,orange)}}
 
-function roadCars(y,t){
-  const arr=[], count=1+(y%2), gap=5.2;
-  for(let i=0;i<count;i++){
-    let x=((i*gap+t*speed(y)*1.55+y*.87+20)%10+10)%10-5;
-    arr.push({x,w:1.32});
-  }
-  return arr;
-}
-function logs(y,t){
-  const arr=[], count=2+(y%2), gap=4.3;
-  for(let i=0;i<count;i++){
-    let x=((i*gap+t*speed(y)*.72+y*.63+20)%11+11)%11-5.5;
-    arr.push({id:y+"-"+i,x,w:2.55,v:speed(y)*.72});
-  }
-  return arr;
-}
-
-function worldToScreen(x,y,z=0){
-  const bottom=Math.max(0,player.y-3.15);
-  const rel=y-bottom;
-  const horizon=H*.13;
-  const usable=H*.82;
-  const py=H-(rel/VIEW_LANES)*usable-H*.08;
-  const scale=.62+(rel/VIEW_LANES)*.5;
-  const px=W/2+x*Math.min(W*.105,78)*scale;
-  return {x:px,y:py-z*34*scale,s:scale};
-}
-function poly(points,fill,stroke=null){
-  ctx.beginPath(); ctx.moveTo(points[0].x,points[0].y);
-  for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);
-  ctx.closePath();ctx.fillStyle=fill;ctx.fill();
-  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}
-}
-function box(x,y,w,d,h,top,front,side){
-  const a=worldToScreen(x-w/2,y-d/2,0),b=worldToScreen(x+w/2,y-d/2,0);
-  const c=worldToScreen(x+w/2,y+d/2,0),dd=worldToScreen(x-w/2,y+d/2,0);
-  const ah=worldToScreen(x-w/2,y-d/2,h),bh=worldToScreen(x+w/2,y-d/2,h);
-  const ch=worldToScreen(x+w/2,y+d/2,h),dh=worldToScreen(x-w/2,y+d/2,h);
-  poly([dd,c,ch,dh],front);
-  poly([c,b,bh,ch],side);
-  poly([dh,ch,bh,ah],top);
-}
-function laneQuad(y,color){
-  const x1=-5.6,x2=5.6;
-  const a=worldToScreen(x1,y-.5),b=worldToScreen(x2,y-.5),c=worldToScreen(x2,y+.5),d=worldToScreen(x1,y+.5);
-  poly([a,b,c,d],color);
-}
-
-function tree(x,y){
-  box(x,y,.35,.35,.55,"#8b5a2b","#6d431f","#5a371b");
-  box(x,y,.95,.85,.85,"#62b94d","#4f9d3e","#3f8432");
-}
-function drawGrass(y){
-  laneQuad(y,y%2?"#77c75c":"#86d66a");
-  const r=seeded(y*7.1);
-  if(r>.45){tree(-4.4+seeded(y*3)*1.2,y+.08); if(r>.72)tree(4.2-seeded(y*5),y-.02)}
-}
-function drawRoad(y,t){
-  laneQuad(y,"#4d5259");
-  const left=worldToScreen(-5.4,y),right=worldToScreen(5.4,y);
-  ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=2;ctx.setLineDash([12,14]);
-  ctx.beginPath();ctx.moveTo(left.x,left.y);ctx.lineTo(right.x,right.y);ctx.stroke();ctx.setLineDash([]);
-  for(const c of roadCars(y,t)){
-    const red=(y+Math.round(c.x*3))%2===0;
-    box(c.x,y,c.w,.62,.56,red?"#ff795e":"#ffd35f",red?"#db5c46":"#e6ad3c",red?"#bd4938":"#c79430");
-    box(c.x-.15*dir(y),y-.01,.54,.48,.34,"#bfe8ff","#9fc8dd","#83adbf");
-  }
-}
-function drawWater(y,t){
-  laneQuad(y,"#43a9dc");
-  const a=worldToScreen(-5,y),b=worldToScreen(5,y);
-  ctx.strokeStyle="rgba(255,255,255,.24)";ctx.lineWidth=1.4;
-  for(let k=-2;k<=2;k++){ctx.beginPath();ctx.moveTo(a.x,b.y+k*7);ctx.lineTo(b.x,b.y+k*7);ctx.stroke()}
-  for(const l of logs(y,t)){
-    box(l.x,y,l.w,.52,.27,"#a86732","#865025","#6d401f");
-    const p=worldToScreen(l.x-l.w*.36,y+.02,.29);
-    ctx.fillStyle="#c98947";ctx.beginPath();ctx.ellipse(p.x,p.y,6*p.s,3*p.s,0,0,Math.PI*2);ctx.fill();
-  }
-}
-
-function drawCharacter(x,y,jump){
-  const p=worldToScreen(x,y,.22+jump*.38),s=p.s;
-  ctx.save();ctx.translate(p.x,p.y);
-  ctx.shadowColor="rgba(0,0,0,.25)";ctx.shadowBlur=8;ctx.shadowOffsetY=5;
-  if(char==="frog"){
-    ctx.fillStyle="#64b844";ctx.beginPath();ctx.ellipse(0,0,19*s,23*s,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#78ca55";ctx.beginPath();ctx.arc(0,-20*s,17*s,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff";
-    for(const ex of [-8,8]){ctx.beginPath();ctx.arc(ex*s,-31*s,6*s,0,Math.PI*2);ctx.fill();ctx.fillStyle="#1f2b20";ctx.beginPath();ctx.arc(ex*s,-31*s,2.5*s,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff"}
-  }else{
-    ctx.fillStyle="#ed993c";ctx.beginPath();ctx.ellipse(0,1*s,18*s,24*s,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#f1a648";ctx.beginPath();ctx.arc(0,-20*s,17*s,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.moveTo(-14*s,-30*s);ctx.lineTo(-8*s,-44*s);ctx.lineTo(-2*s,-31*s);ctx.fill();
-    ctx.beginPath();ctx.moveTo(14*s,-30*s);ctx.lineTo(8*s,-44*s);ctx.lineTo(2*s,-31*s);ctx.fill();
-    ctx.fillStyle="#222";for(const ex of [-6,6]){ctx.beginPath();ctx.arc(ex*s,-21*s,2.2*s,0,Math.PI*2);ctx.fill()}
-  }
-  ctx.restore();
-}
-
-function lose(){
-  if(dead)return; dead=true;riding=null;
-  best=Math.max(best,highest);localStorage.setItem("crossy3dBest",best);
-  result.textContent="Счёт: "+highest; over.style.display="flex";
-}
-function move(dx,dy){
-  if(dead||player.jumpT<1)return;
-  const nx=Math.max(-3,Math.min(3,player.x+dx));
-  const ny=Math.max(0,player.y+dy);
-  player.fromX=player.x;player.fromY=player.y;player.toX=nx;player.toY=ny;player.jumpT=0;riding=null;
-}
-function checkLanding(t){
-  const type=laneType(Math.round(player.y));
-  if(type==="water"){
-    const ls=logs(Math.round(player.y),t);
-    let hit=null;
-    for(const l of ls)if(Math.abs(player.x-l.x)<l.w*.48){hit=l;break}
-    if(hit)riding={lane:Math.round(player.y),id:hit.id}; else lose();
-  }
-}
-function update(dt,t){
-  if(dead)return;
-  if(player.jumpT<1){
-    player.jumpT=Math.min(1,player.jumpT+dt*5.5);
-    const q=1-Math.pow(1-player.jumpT,3);
-    player.x=player.fromX+(player.toX-player.fromX)*q;
-    player.y=player.fromY+(player.toY-player.fromY)*q;
-    if(player.jumpT===1){player.x=player.toX;player.y=player.toY;highest=Math.max(highest,Math.round(player.y));checkLanding(t)}
-  } else if(riding){
-    const ls=logs(riding.lane,t), l=ls.find(v=>v.id===riding.id);
-    if(l){
-      player.x=l.x;
-      if(player.x<-3.6||player.x>3.6)lose();
-    } else lose();
-  }
-
-  const lane=Math.round(player.y),type=laneType(lane);
-  if(type==="road"&&player.jumpT===1){
-    for(const c of roadCars(lane,t))if(Math.abs(player.x-c.x)<(c.w*.52+.28))lose();
-  }
-}
-function draw(t){
-  ctx.fillStyle="#9ed7ff";ctx.fillRect(0,0,W,H);
-  const bottom=Math.max(0,Math.floor(player.y-3));
-  for(let y=bottom+VIEW_LANES;y>=bottom;y--){
-    const type=laneType(y);
-    if(type==="grass")drawGrass(y); else if(type==="road")drawRoad(y,t); else drawWater(y,t);
-  }
-  const jump=player.jumpT<1?Math.sin(player.jumpT*Math.PI):0;
-  drawCharacter(player.x,player.y,jump);
-  scoreEl.textContent="🏆 "+highest;bestEl.textContent="Рекорд: "+Math.max(best,highest);
-}
-function loop(ms){
-  const t=ms/1000,dt=Math.min(.033,t-lastTime);lastTime=t;
-  update(dt,t);draw(t);requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-
-addEventListener("keydown",e=>{
-  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();
-  if(e.key==="ArrowUp"||e.key===" "||e.key.toLowerCase()==="w")move(0,1);
-  else if(e.key==="ArrowDown"||e.key.toLowerCase()==="s")move(0,-1);
-  else if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")move(-1,0);
-  else if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")move(1,0);
-},{passive:false});
-
-document.querySelectorAll("[data-m]").forEach(b=>b.addEventListener("pointerdown",e=>{
-  e.preventDefault();const m=b.dataset.m;
-  if(m==="up")move(0,1);if(m==="down")move(0,-1);if(m==="left")move(-1,0);if(m==="right")move(1,0);
-}));
-
-let sx=0,sy=0,st=0;
-canvas.addEventListener("pointerdown",e=>{sx=e.clientX;sy=e.clientY;st=performance.now();},{passive:true});
-canvas.addEventListener("pointerup",e=>{
-  const dx=e.clientX-sx,dy=e.clientY-sy,d=Math.hypot(dx,dy);
-  if(d<24){move(0,1);return}
-  if(Math.abs(dx)>Math.abs(dy))move(dx>0?1:-1,0); else move(0,dy<0?1:-1);
-},{passive:true});
-
+function resize(){const dpr=Math.min(devicePixelRatio||1,1.6);canvas.width=Math.max(1,Math.floor(innerWidth*dpr));canvas.height=Math.max(1,Math.floor(innerHeight*dpr));canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';gl.viewport(0,0,canvas.width,canvas.height);const aspect=innerWidth/innerHeight;let halfW=aspect>1?6.4:4.5,halfH=halfW/aspect;proj=M.ortho(-halfW,halfW,-halfH,halfH,-40,40)}addEventListener('resize',resize,{passive:true});resize();
+gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);gl.clearColor(.55,.78,.93,1);gl.uniform3fv(loc.light,new Float32Array(norm3(.5,-1,.35)));gl.uniform3fv(loc.fog,new Float32Array(col('#91c9e8')));gl.uniform1f(loc.fn,8);gl.uniform1f(loc.ff,20);
+function render(t){gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);const camZ=player.y+5.4;view=M.lookAt([7.6,8.5,camZ-7.3],[0,0.1,player.y+3.1],[0,1,0]);const bottom=Math.max(0,Math.floor(player.y-3));for(let y=bottom+14;y>=bottom;y--){const ty=laneType(y);groundLane(y,ty);if(ty==='grass'){const r=seeded(y*7.3);if(r>.5)tree(-3.2+seeded(y*2.1)*.8,y);if(r>.76)tree(3.1-seeded(y*5.2)*.8,y)}else if(ty==='road')for(const c of cars(y,t))drawCar(c,y);else for(const l of logs(y,t))drawLog(l,y)}drawCharacter();scoreEl.textContent='🏆 '+highest;bestEl.textContent='Рекорд: '+Math.max(best,highest)}
+function loop(ms){const t=ms/1000,dt=Math.min(.033,last? t-last:.016);last=t;update(dt,t);render(t);requestAnimationFrame(loop)}requestAnimationFrame(loop);
+addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(e.key==='ArrowUp'||e.key===' '||e.key.toLowerCase()==='w')move(0,1);else if(e.key==='ArrowDown'||e.key.toLowerCase()==='s')move(0,-1);else if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')move(-1,0);else if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')move(1,0)},{passive:false});
+document.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();const m=b.dataset.m;if(m==='up')move(0,1);if(m==='down')move(0,-1);if(m==='left')move(-1,0);if(m==='right')move(1,0)}));let sx=0,sy=0;canvas.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY},{passive:true});canvas.addEventListener('pointerup',e=>{const dx=e.clientX-sx,dy=e.clientY-sy,d=Math.hypot(dx,dy);if(d<24)return move(0,1);if(Math.abs(dx)>Math.abs(dy))move(dx>0?1:-1,0);else move(0,dy<0?1:-1)},{passive:true});
 })();
 </script>
-</body>
-</html>
+</body></html>
