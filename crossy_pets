@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#18202a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Crossy Pets 3D</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #18202a; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; touch-action: none; user-select: none; }
+    #game { position: fixed; inset: 0; width: 100%; height: 100%; }
+
+    .hud {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      left: max(12px, env(safe-area-inset-left));
+      right: max(12px, env(safe-area-inset-right));
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .panel {
+      background: rgba(10, 14, 20, .72);
+      color: #fff;
+      border-radius: 14px;
+      padding: 10px 14px;
+      min-width: 92px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    }
+
+    .score { font-size: clamp(20px, 5vw, 30px); font-weight: 800; line-height: 1; }
+    .best { margin-top: 5px; opacity: .72; font-size: 12px; }
+
+    .top-buttons { display: flex; gap: 8px; pointer-events: auto; }
+    .icon-btn {
+      width: 48px; height: 48px; border: 0; border-radius: 14px;
+      background: rgba(10, 14, 20, .72); color: #fff; font-size: 23px; font-weight: 800;
+      cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+
+    .character-picker {
+      position: fixed;
+      top: max(72px, calc(env(safe-area-inset-top) + 72px));
+      right: max(12px, env(safe-area-inset-right));
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+    }
+
+    .char-btn {
+      border: 0; border-radius: 14px; padding: 9px 11px;
+      background: rgba(10,14,20,.72); color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    }
+    .char-btn.active { outline: 3px solid #ffd84d; transform: translateY(-1px); }
+
+    .mobile-controls {
+      position: fixed;
+      left: 50%;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 12;
+      display: none;
+      grid-template-columns: 64px 64px 64px;
+      grid-template-rows: 56px 56px;
+      gap: 7px;
+    }
+    .move-btn {
+      border: 0; border-radius: 14px;
+      background: rgba(12, 17, 24, .75); color: #fff;
+      font-size: 27px; font-weight: 900;
+      box-shadow: 0 7px 20px rgba(0,0,0,.25);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      touch-action: manipulation;
+    }
+    .move-btn:active { transform: scale(.95); }
+    .up { grid-column: 2; grid-row: 1; }
+    .left { grid-column: 1; grid-row: 2; }
+    .down { grid-column: 2; grid-row: 2; }
+    .right { grid-column: 3; grid-row: 2; }
+
+    .overlay {
+      position: fixed; inset: 0; z-index: 20;
+      display: none; place-items: center;
+      background: rgba(5, 9, 14, .48);
+      padding: 24px;
+    }
+    .overlay.show { display: grid; }
+    .card {
+      width: min(92vw, 400px);
+      background: rgba(20,26,34,.94);
+      color: #fff;
+      border-radius: 22px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 24px 70px rgba(0,0,0,.4);
+    }
+    .card h1 { margin: 0 0 8px; font-size: 34px; }
+    .card p { margin: 7px 0 18px; opacity: .78; line-height: 1.45; }
+    .primary {
+      width: 100%; border: 0; border-radius: 14px; padding: 14px 18px;
+      font-size: 18px; font-weight: 800; cursor: pointer;
+      background: #75d34f; color: #14200f;
+    }
+
+    .tip {
+      position: fixed;
+      left: 50%;
+      bottom: calc(max(14px, env(safe-area-inset-bottom)) + 124px);
+      transform: translateX(-50%);
+      z-index: 9;
+      color: #fff;
+      background: rgba(10,14,20,.58);
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      text-align: center;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    #loading {
+      position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
+      background: #18202a; color: white; font-weight: 700;
+    }
+
+    @media (pointer: coarse), (max-width: 800px) {
+      .mobile-controls { display: grid; }
+      .tip { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 128px); }
+      .character-picker { top: max(68px, calc(env(safe-area-inset-top) + 68px)); }
+    }
+
+    @media (max-height: 560px) and (orientation: landscape) {
+      .mobile-controls { left: auto; right: max(14px, env(safe-area-inset-right)); transform: none; bottom: max(10px, env(safe-area-inset-bottom)); }
+      .tip { display: none; }
+      .character-picker { top: auto; bottom: max(14px, env(safe-area-inset-bottom)); right: auto; left: max(14px, env(safe-area-inset-left)); }
+    }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div id="loading">Загрузка Crossy Pets 3D…</div>
+
+  <div class="hud">
+    <div class="panel">
+      <div class="score" id="score">0</div>
+      <div class="best" id="best">Рекорд: 0</div>
+    </div>
+    <div class="top-buttons">
+      <button id="restartBtn" class="icon-btn" aria-label="Перезапуск">↻</button>
+    </div>
+  </div>
+
+  <div class="character-picker">
+    <button id="frogBtn" class="char-btn" aria-label="Лягушка">🐸</button>
+    <button id="catBtn" class="char-btn" aria-label="Котик">🐱</button>
+  </div>
+
+  <div class="tip">Тап — вперёд · свайпы — в стороны и назад</div>
+
+  <div class="mobile-controls">
+    <button class="move-btn up" data-move="up">↑</button>
+    <button class="move-btn left" data-move="left">←</button>
+    <button class="move-btn down" data-move="down">↓</button>
+    <button class="move-btn right" data-move="right">→</button>
+  </div>
+
+  <div id="gameOver" class="overlay">
+    <div class="card">
+      <h1>Попался!</h1>
+      <p id="gameOverText">Счёт: 0</p>
+      <button id="againBtn" class="primary">Играть ещё</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+  <script>
+  (() => {
+    'use strict';
+
+    if (!window.THREE) {
+      document.getElementById('loading').textContent = 'Не удалось загрузить 3D-библиотеку. Проверь интернет и обнови страницу.';
+      return;
+    }
+
+    const gameEl = document.getElementById('game');
+    const loadingEl = document.getElementById('loading');
+    const scoreEl = document.getElementById('score');
+    const bestEl = document.getElementById('best');
+    const frogBtn = document.getElementById('frogBtn');
+    const catBtn = document.getElementById('catBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const gameOverEl = document.getElementById('gameOver');
+    const gameOverText = document.getElementById('gameOverText');
+    const againBtn = document.getElementById('againBtn');
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    gameEl.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x9ed7ff);
+    scene.fog = new THREE.Fog(0x9ed7ff, 24, 62);
+
+    const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 120);
+    camera.position.set(10, 14, 14);
+
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x50643a, 2.15);
+    scene.add(hemi);
+    const sun = new THREE.DirectionalLight(0xffffff, 2.25);
+    sun.position.set(8, 18, 10);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.camera.left = -18;
+    sun.shadow.camera.right = 18;
+    sun.shadow.camera.top = 24;
+    sun.shadow.camera.bottom = -24;
+    scene.add(sun);
+
+    const WORLD_WIDTH = 18;
+    const LANE_H = 2.5;
+    const STEP_X = 2.2;
+    const PLAYER_Y = 0.72;
+    const START_LANES = 26;
+    const KEEP_BEHIND = 8;
+    const KEEP_AHEAD = 20;
+
+    const lanesGroup = new THREE.Group();
+    scene.add(lanesGroup);
+
+    const COLORS = {
+      grassA: 0x77c94f,
+      grassB: 0x68b846,
+      road: 0x4c515a,
+      water: 0x279bd3,
+      log: 0x8b572a,
+      logTop: 0xb06e35,
+      trunk: 0x6c4825,
+      leaf: 0x58a943,
+      rock: 0x737b83,
+      white: 0xf3f3f0,
+      frog: 0x58b842,
+      frogDark: 0x317f2d,
+      cat: 0xe9952f,
+      catDark: 0xb5621f,
+    };
+
+    const lanes = new Map();
+    let nextLaneIndex = 0;
+    let playerLane = 0;
+    let maxLane = 0;
+    let playerX = 0;
+    let alive = true;
+    let character = localStorage.getItem('crossy3dCharacter') || 'frog';
+    let best = Number(localStorage.getItem('crossy3dBest') || 0);
+    let playerMesh = null;
+    let rideLog = null;
+    let lastTime = performance.now();
+    let hop = null;
+    let pointerStart = null;
+
+    const tempBoxA = new THREE.Box3();
+    const tempBoxB = new THREE.Box3();
+
+    function mat(color, roughness = .82) {
+      return new THREE.MeshStandardMaterial({ color, roughness, metalness: 0 });
+    }
+
+    const materials = {
+      grassA: mat(COLORS.grassA), grassB: mat(COLORS.grassB), road: mat(COLORS.road), water: mat(COLORS.water, .55),
+      log: mat(COLORS.log), logTop: mat(COLORS.logTop), trunk: mat(COLORS.trunk), leaf: mat(COLORS.leaf), rock: mat(COLORS.rock),
+      white: mat(COLORS.white), black: mat(0x1f2329), yellow: mat(0xffcb3e), red: mat(0xe85a4f), blue: mat(0x3d86c7), purple: mat(0x8c63c7),
+      frog: mat(COLORS.frog), frogDark: mat(COLORS.frogDark), cat: mat(COLORS.cat), catDark: mat(COLORS.catDark), pink: mat(0xf3a6a8)
+    };
+
+    function box(w,h,d, material) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), material);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      return m;
+    }
+
+    function addCubeTree(group, x, z, s = 1) {
+      const trunk = box(.45*s, 1.1*s, .45*s, materials.trunk);
+      trunk.position.set(x, .55*s, z);
+      group.add(trunk);
+      const crown = box(1.25*s, 1.15*s, 1.25*s, materials.leaf);
+      crown.position.set(x, 1.45*s, z);
+      crown.rotation.y = .18;
+      group.add(crown);
+    }
+
+    function seeded(n) {
+      const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
+      return x - Math.floor(x);
+    }
+
+    function laneType(i) {
+      if (i <= 2) return 'grass';
+      const n = seeded(i * 1.37);
+      if (n < .43) return 'road';
+      if (n < .72) return 'water';
+      return 'grass';
+    }
+
+    function createLane(index) {
+      const type = laneType(index);
+      const group = new THREE.Group();
+      group.position.z = -index * LANE_H;
+      lanesGroup.add(group);
+
+      const lane = { index, type, group, movers: [], speed: 0 };
+
+      if (type === 'grass') {
+        const base = box(WORLD_WIDTH, .35, LANE_H, index % 2 ? materials.grassA : materials.grassB);
+        base.position.y = -.18;
+        group.add(base);
+
+        for (let k = 0; k < 4; k++) {
+          const r = seeded(index * 17 + k * 3);
+          const x = -WORLD_WIDTH/2 + 1 + r * (WORLD_WIDTH - 2);
+          if (Math.abs(x) < 2 && index < 4) continue;
+          if (k % 2 === 0) addCubeTree(group, x, 0, .62 + seeded(index + k) * .32);
+          else {
+            const rock = box(.75, .45, .7, materials.rock);
+            rock.position.set(x, .23, 0);
+            rock.rotation.y = seeded(index * 9 + k) * 2;
+            group.add(rock);
+          }
+        }
+      }
+
+      if (type === 'road') {
+        const base = box(WORLD_WIDTH, .24, LANE_H, materials.road);
+        base.position.y = -.12;
+        group.add(base);
+        for (let x=-WORLD_WIDTH/2+1; x<WORLD_WIDTH/2; x+=2.4) {
+          const dash = box(1.15, .03, .08, materials.white);
+          dash.position.set(x, .025, 0);
+          group.add(dash);
+        }
+        lane.speed = (index % 2 ? 1 : -1) * (2.2 + seeded(index) * 1.9);
+        const count = 2 + Math.floor(seeded(index * 8) * 2);
+        for (let k=0; k<count; k++) {
+          const car = createCar(k % 4);
+          car.position.set(-WORLD_WIDTH/2 + (k + .5) * (WORLD_WIDTH/count) + seeded(index+k)*1.2, .45, 0);
+          car.userData.kind = 'car';
+          car.userData.width = 1.65;
+          group.add(car);
+          lane.movers.push(car);
+        }
+      }
+
+      if (type === 'water') {
+        const water = box(WORLD_WIDTH, .18, LANE_H, materials.water);
+        water.position.y = -.17;
+        group.add(water);
+        lane.speed = (index % 2 ? 1 : -1) * (1.1 + seeded(index) * 1.05);
+        const count = 2 + Math.floor(seeded(index * 5) * 2);
+        for (let k=0; k<count; k++) {
+          const log = createLog(2.7 + seeded(index*11+k) * 1.15);
+          log.position.set(-WORLD_WIDTH/2 + (k + .5) * (WORLD_WIDTH/count) + seeded(index+k*2)*1.1, .17, 0);
+          log.userData.kind = 'log';
+          log.userData.width = log.userData.length;
+          group.add(log);
+          lane.movers.push(log);
+        }
+      }
+
+      lanes.set(index, lane);
+      return lane;
+    }
+
+    function createLog(length) {
+      const g = new THREE.Group();
+      const body = box(length, .42, 1.22, materials.log);
+      body.position.y = 0;
+      g.add(body);
+      const top = box(length * .92, .12, 1.02, materials.logTop);
+      top.position.y = .27;
+      g.add(top);
+      for (let x=-length*.33; x<=length*.33; x+=length*.33) {
+        const band = box(.09, .09, 1.08, materials.trunk);
+        band.position.set(x, .34, 0);
+        g.add(band);
+      }
+      g.userData.length = length;
+      return g;
+    }
+
+    function createCar(kind) {
+      const g = new THREE.Group();
+      const colors = [materials.red, materials.yellow, materials.blue, materials.purple];
+      const body = box(1.7, .55, 1.05, colors[kind % colors.length]);
+      body.position.y = .22;
+      g.add(body);
+      const cabin = box(.95, .48, .88, materials.white);
+      cabin.position.set(.05, .68, 0);
+      g.add(cabin);
+      const windshield = box(.35, .28, .9, materials.blue);
+      windshield.position.set(.45, .7, 0);
+      g.add(windshield);
+      for (const sx of [-.55,.55]) for (const sz of [-.48,.48]) {
+        const wheel = box(.32,.3,.16,materials.black);
+        wheel.position.set(sx,.03,sz);
+        g.add(wheel);
+      }
+      return g;
+    }
+
+    function createPlayer(kind) {
+      const g = new THREE.Group();
+      g.userData.kind = kind;
+      if (kind === 'frog') {
+        const body = box(.95,.85,.75,materials.frog); body.position.y=.65; g.add(body);
+        const head = box(1.0,.72,.82,materials.frog); head.position.y=1.32; g.add(head);
+        for (const sx of [-.32,.32]) {
+          const eye = box(.22,.22,.22,materials.white); eye.position.set(sx,1.72,.28); g.add(eye);
+          const pupil = box(.08,.09,.08,materials.black); pupil.position.set(sx,1.75,.4); g.add(pupil);
+        }
+        for (const sx of [-.42,.42]) {
+          const foot = box(.35,.18,.48,materials.frogDark); foot.position.set(sx,.2,.05); g.add(foot);
+        }
+      } else {
+        const body = box(.82,.95,.7,materials.cat); body.position.y=.7; g.add(body);
+        const head = box(.92,.78,.76,materials.cat); head.position.y=1.52; g.add(head);
+        const earGeo = new THREE.ConeGeometry(.22,.48,4);
+        for (const sx of [-.28,.28]) {
+          const ear = new THREE.Mesh(earGeo,materials.catDark); ear.position.set(sx,2.02,0); ear.rotation.y=Math.PI/4; ear.castShadow=true; g.add(ear);
+          const eye = box(.12,.12,.08,materials.black); eye.position.set(sx*.78,1.62,.42); g.add(eye);
+        }
+        const muzzle = box(.32,.2,.08,materials.pink); muzzle.position.set(0,1.4,.43); g.add(muzzle);
+        const tail = box(.18,.9,.18,materials.catDark); tail.position.set(-.48,.85,-.2); tail.rotation.z=-.45; g.add(tail);
+      }
+      g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      return g;
+    }
+
+    function rebuildPlayer() {
+      if (playerMesh) scene.remove(playerMesh);
+      playerMesh = createPlayer(character);
+      playerMesh.position.set(playerX, PLAYER_Y, -playerLane * LANE_H);
+      scene.add(playerMesh);
+      frogBtn.classList.toggle('active', character === 'frog');
+      catBtn.classList.toggle('active', character === 'cat');
+    }
+
+    function setCharacter(kind) {
+      character = kind;
+      localStorage.setItem('crossy3dCharacter', kind);
+      rebuildPlayer();
+    }
+
+    function ensureLanes() {
+      const min = Math.max(0, playerLane - KEEP_BEHIND);
+      const max = playerLane + KEEP_AHEAD;
+      while (nextLaneIndex <= max) createLane(nextLaneIndex++);
+      for (const [i,lane] of lanes) {
+        if (i < min - 2) {
+          lanesGroup.remove(lane.group);
+          lanes.delete(i);
+        }
+      }
+    }
+
+    function wrapMover(m) {
+      const margin = 3.4;
+      if (m.position.x > WORLD_WIDTH/2 + margin) m.position.x = -WORLD_WIDTH/2 - margin;
+      if (m.position.x < -WORLD_WIDTH/2 - margin) m.position.x = WORLD_WIDTH/2 + margin;
+    }
+
+    function currentLaneObj() { return lanes.get(playerLane); }
+
+    function supportedLog() {
+      const lane = currentLaneObj();
+      if (!lane || lane.type !== 'water') return null;
+      let bestLog = null;
+      let bestDist = Infinity;
+      for (const log of lane.movers) {
+        const half = log.userData.width / 2;
+        const dist = Math.abs(playerX - log.position.x);
+        if (dist <= half - .28 && dist < bestDist) { bestDist = dist; bestLog = log; }
+      }
+      return bestLog;
+    }
+
+    function move(dx, dz) {
+      if (!alive || hop) return;
+      const nextLane = Math.max(0, playerLane + dz);
+      const nextX = THREE.MathUtils.clamp(playerX + dx * STEP_X, -WORLD_WIDTH/2 + .9, WORLD_WIDTH/2 - .9);
+      const from = new THREE.Vector3(playerX, PLAYER_Y, -playerLane * LANE_H);
+      const to = new THREE.Vector3(nextX, PLAYER_Y, -nextLane * LANE_H);
+      hop = { t: 0, duration: .14, from, to, nextLane, nextX };
+      rideLog = null;
+    }
+
+    function finishHop() {
+      playerLane = hop.nextLane;
+      playerX = hop.nextX;
+      maxLane = Math.max(maxLane, playerLane);
+      hop = null;
+      ensureLanes();
+      const lane = currentLaneObj();
+      if (lane && lane.type === 'water') {
+        rideLog = supportedLog();
+        if (!rideLog) lose('Ты упал в воду');
+      }
+      updateHud();
+    }
+
+    function updatePlayer(dt) {
+      if (!playerMesh) return;
+      if (hop) {
+        hop.t += dt;
+        const p = Math.min(1, hop.t / hop.duration);
+        const eased = p < .5 ? 2*p*p : 1 - Math.pow(-2*p+2,2)/2;
+        playerMesh.position.lerpVectors(hop.from, hop.to, eased);
+        playerMesh.position.y = PLAYER_Y + Math.sin(p * Math.PI) * .75;
+        if (p >= 1) finishHop();
+      } else {
+        playerMesh.position.set(playerX, PLAYER_Y, -playerLane * LANE_H);
+      }
+    }
+
+    function checkRoadCollision() {
+      if (!alive || hop) return;
+      const lane = currentLaneObj();
+      if (!lane || lane.type !== 'road') return;
+      tempBoxA.setFromObject(playerMesh);
+      tempBoxA.expandByScalar(-.16);
+      for (const car of lane.movers) {
+        tempBoxB.setFromObject(car);
+        tempBoxB.expandByScalar(-.08);
+        if (tempBoxA.intersectsBox(tempBoxB)) {
+          lose('Тебя сбила машина');
+          return;
+        }
+      }
+    }
+
+    function lose(reason) {
+      if (!alive) return;
+      alive = false;
+      best = Math.max(best, maxLane);
+      localStorage.setItem('crossy3dBest', String(best));
+      updateHud();
+      gameOverText.textContent = `${reason}. Счёт: ${maxLane}`;
+      gameOverEl.classList.add('show');
+    }
+
+    function restart() {
+      alive = true;
+      playerLane = 0;
+      maxLane = 0;
+      playerX = 0;
+      rideLog = null;
+      hop = null;
+      gameOverEl.classList.remove('show');
+      for (const [, lane] of lanes) lanesGroup.remove(lane.group);
+      lanes.clear();
+      nextLaneIndex = 0;
+      ensureLanes();
+      rebuildPlayer();
+      updateHud();
+      camera.position.set(10, 14, 14);
+    }
+
+    function updateHud() {
+      scoreEl.textContent = String(maxLane);
+      bestEl.textContent = `Рекорд: ${Math.max(best, maxLane)}`;
+    }
+
+    function updateCamera(dt) {
+      if (!playerMesh) return;
+      const target = new THREE.Vector3(playerX * .28 + 8.8, 13.2, playerMesh.position.z + 13.5);
+      const k = 1 - Math.pow(.001, dt);
+      camera.position.lerp(target, k);
+      camera.lookAt(playerX * .15, .2, playerMesh.position.z - 4.1);
+    }
+
+    function updateMovers(dt) {
+      for (const [,lane] of lanes) {
+        if (!lane.speed) continue;
+        for (const mover of lane.movers) {
+          mover.position.x += lane.speed * dt;
+          wrapMover(mover);
+        }
+      }
+
+      // Ключевая логика: если персонаж стоит на бревне, он движется ВМЕСТЕ с ним.
+      if (alive && !hop) {
+        const lane = currentLaneObj();
+        if (lane && lane.type === 'water') {
+          if (!rideLog) rideLog = supportedLog();
+          if (!rideLog) {
+            lose('Ты упал в воду');
+            return;
+          }
+          playerX += lane.speed * dt;
+          if (playerX < -WORLD_WIDTH/2 -.5 || playerX > WORLD_WIDTH/2 + .5) {
+            lose('Бревно унесло тебя за край');
+            return;
+          }
+          playerMesh.position.x = playerX;
+        }
+      }
+    }
+
+    function addWorldBackdrop() {
+      const floor = box(80, .4, 140, mat(0x719a55));
+      floor.position.set(0,-.45,-45);
+      floor.receiveShadow = true;
+      scene.add(floor);
+    }
+
+    addWorldBackdrop();
+    ensureLanes();
+    rebuildPlayer();
+    updateHud();
+
+    function animate(now) {
+      const dt = Math.min(.033, Math.max(.001, (now - lastTime) / 1000));
+      lastTime = now;
+      if (alive) {
+        updateMovers(dt);
+        updatePlayer(dt);
+        checkRoadCollision();
+      }
+      updateCamera(dt);
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+
+    function handleKey(e) {
+      const k = e.key.toLowerCase();
+      if (['arrowup','arrowdown','arrowleft','arrowright',' ','w','a','s','d'].includes(k)) e.preventDefault();
+      if (k === 'arrowup' || k === 'w' || k === ' ') move(0, 1);
+      if (k === 'arrowdown' || k === 's') move(0, -1);
+      if (k === 'arrowleft' || k === 'a') move(-1, 0);
+      if (k === 'arrowright' || k === 'd') move(1, 0);
+      if (k === 'r') restart();
+    }
+    window.addEventListener('keydown', handleKey, { passive: false });
+
+    function pointerDown(e) {
+      pointerStart = { x: e.clientX, y: e.clientY, time: performance.now() };
+    }
+    function pointerUp(e) {
+      if (!pointerStart || !alive) return;
+      const dx = e.clientX - pointerStart.x;
+      const dy = e.clientY - pointerStart.y;
+      const dist = Math.hypot(dx,dy);
+      pointerStart = null;
+      if (dist < 24) { move(0,1); return; }
+      if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 1 : -1, 0);
+      else move(0, dy < 0 ? 1 : -1);
+    }
+    renderer.domElement.addEventListener('pointerdown', pointerDown, { passive: true });
+    renderer.domElement.addEventListener('pointerup', pointerUp, { passive: true });
+
+    document.querySelectorAll('.move-btn').forEach(btn => {
+      btn.addEventListener('pointerdown', e => {
+        e.preventDefault(); e.stopPropagation();
+        const d = btn.dataset.move;
+        if (d === 'up') move(0,1);
+        if (d === 'down') move(0,-1);
+        if (d === 'left') move(-1,0);
+        if (d === 'right') move(1,0);
+      });
+    });
+
+    frogBtn.addEventListener('click', () => setCharacter('frog'));
+    catBtn.addEventListener('click', () => setCharacter('cat'));
+    restartBtn.addEventListener('click', restart);
+    againBtn.addEventListener('click', restart);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+    });
+
+    document.addEventListener('visibilitychange', () => { lastTime = performance.now(); });
+
+    loadingEl.style.display = 'none';
+    requestAnimationFrame(animate);
+  })();
+  </script>
+</body>
+</html>
