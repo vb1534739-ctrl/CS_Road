@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#8bd6ff" />
+  <title>Crossy Pets 3D</title>
+</head>
+<body>
+  <canvas id="renderCanvas"></canvas>
+
+  <div class="hud">
+    <div class="scoreCard">
+      <div class="score" id="score">🏆 0</div>
+      <div class="best" id="best">Рекорд: 0</div>
+    </div>
+    <button class="glass restart" id="restart" aria-label="Перезапустить">↻</button>
+  </div>
+
+  <div class="characters">
+    <button class="glass character active" data-character="frog">🐸</button>
+    <button class="glass character" data-character="cat">🐱</button>
+  </div>
+
+  <div class="mobileControls">
+    <button data-move="forward" class="up">↑</button>
+    <button data-move="left">←</button>
+    <button data-move="back">↓</button>
+    <button data-move="right">→</button>
+  </div>
+
+  <div class="gameOver" id="gameOver">
+    <div class="gameOverCard">
+      <h1>Попался!</h1>
+      <p id="finalScore">Счёт: 0</p>
+      <button id="playAgain">Играть ещё</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
